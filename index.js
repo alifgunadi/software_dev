@@ -15,9 +15,8 @@ app.use(bodyParser.json());
 app.use(cors());
 
 const influx = new Influx.InfluxDB({
-  port: 8086,
-  host: 'localhost',
-  database: 'Weist', 
+  port: process.env.INFLUXDB_PORT,
+  database: process.env.BUCKET, 
   schema: [
     {
       measurement: 'measurement',
@@ -48,9 +47,9 @@ function saveDataToInfluxDB(topic, payload) {
 };
 
 //MQTT Service
-const mqttHost = '2258a225a01b46708ae89ef0a59d1f5c.s2.eu.hivemq.cloud';
+const mqttHost = process.env.MQTT_HOST;
 const mqttProtocol = 'mqtts';
-const mqttPort = 8883;
+const mqttPort = process.env.MQTT_PORT;
 const mqttUsername = process.env.MQTT_USERNAME;
 const mqttPassword = process.env.MQTT_PASSWORD;
 
