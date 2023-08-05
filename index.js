@@ -157,7 +157,7 @@ app.get('/api/total-usage-2023', (req, res) => {
     });
 });
 
-//InfluDB set-up
+//InfluxDB set-up
 const {InfluxDB, Point} = require('@influxdata/influxdb-client');
 
 const token = process.env.INFLUXDB_TOKEN;
