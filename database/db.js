@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const url = 'mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.8.0';
+const url = 'mongodb://127.0.0.1:27017/ravelware?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.8.0';
 
 const database = async () => {
   try {
