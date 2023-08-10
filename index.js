@@ -38,23 +38,21 @@ const influx = new Influx.InfluxDB({
 function saveDataToInfluxDB(topic, payload) {
   // const { v, i, kW, kVA, kWH, pf, vinabal, iunbal } = JSON.stringify(payload);
   if (payload.v && payload.v[0] && payload.i && payload.i[0]) {
-    influx
-      .writePoints([
-        {
+    influx.writePoints([{
           measurement: 'sensor',
           // fields: { v, i, kW, kVA, kWH, pf, vinabal, iunbal },
           // fields: { kWh: (energy, power, ampere, voltage) },
+          tags: { status: topic.status },
           fields: {
             v: payload.v[0],
             i: payload.i[0],
             kW: payload.kW,
-            KVAL: payload.KVAL,
+            kVA: payload.kVA,
             kWH: payload.kWH,
             pf: payload.pf,
             vunbal: payload.vunbal,
             iunbal: payload.iunbal,
           },
-          tags: { status: topic.status },
         },
       ])
       .then(() => console.log('Data tersimpan di InfluxDB'))
@@ -123,50 +121,15 @@ app.get('/', (req, res) => {
   }
 });
 
-app.get('/api/realtime', (req, res) => {
-  influx
-    .query('SELECT * FROM energy GROUP BY panel ORDER BY time DESC LIMIT 1')
-    .then((results) => {
-      const data = results.map((result) => result.toJSON());
-      res.json(data);
-      console.log(data);
-    })
-    .catch((error) => {
-      res.status(500).json({ status: 'Gagal mengambil data realtime', message: error });
-      console.log(error.message);
-    });
-});
-
-app.get('/api/today-usage', (req, res) => {
-  influx
-    .query(
-      'SELECT * FROM energy GROUP BY panel ORDER BY time DESC LIMIT 1 OFFSET 1'
-    )
-    .then((results) => {
-      const energyNow = results[0].kWh;
-      const energyMidnight = results[1].kWh;
-      const todayUsage = energyNow - energyMidnight;
-      const costPerKWh = 1500;
-      const todayCost = todayUsage * costPerKWh;
-
-      res.json({ todayUsage, todayCost });
-    })
-    .catch((error) => {
-      res.status(500).json({ status: 'Gagal menghitung today\'s usage', message: error });
-    });
-});
-
-app.get('/api/total-usage-2023', (req, res) => {
-  influx
-    .query(
-      'SELECT SUM(kWh) AS total_kWh, SUM(kWh) * 1500 AS total_cost FROM energy WHERE time >= \'2023-01-01\' AND time < \'2024-01-01\' GROUP BY time(1M)'
-    )
-    .then((results) => {
-      res.json(results);
-    })
-    .catch((error) => {
-      res.status(500).json({ status: 'Gagal mengambil data total usage 2023', message: error });
-    });
+app.get('/api/get_sensor_data', async (req, res) => {
+  try {
+    const query = 'SELECT * FROM sensor ORDER BY time DESC LIMIT 1';
+    const result = await influx.query(query);
+    const latestData = result[0];
+    res.json(latestData);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching sensor data' });
+  }
 });
 
 //InfluxDB set-up
