@@ -93,8 +93,8 @@ client.on('connect', () => {
   for (const key in topics) {
     if (topics.hasOwnProperty(key)) {
       const topic = topics[key];
-      client.subscribe("presence", (error) => {
-        if (!error) {
+      client.subscribe("presence", (err) => {
+        if (!err) {
           client.publish("presence", topic)
         }
       });
