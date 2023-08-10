@@ -1,6 +1,6 @@
 #ignore .env files
 .env
-
-.json
+case.txt
+case.json
 
 /node_modules/
