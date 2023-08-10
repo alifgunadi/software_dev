@@ -32,8 +32,7 @@ const influx = new Influx.InfluxDB({
 });
 
 function saveDataToInfluxDB(topic, payload) {
-  const { panel, floor, energy, power, ampere, voltage } = JSON.parse(payload);
-
+  const { panel, floor, energy, power, ampere, voltage } = JSON.stringify(topic, payload);
   influx
     .writePoints([
       {
@@ -74,19 +73,12 @@ client.on('connect', () => {
   for (const key in topics) {
     if (topics.hasOwnProperty(key)) {
       const topic = topics[key];
-      client.subscribe(topic);
+      client.subscribe("presence", (error) => {
+        if (!error) {
+          client.publish("presence", topic)
+        }
+      });
       console.log(`Subscribed to: ${topic}`);
-    }
-  }
-});
-
-client.on('connect', () => {
-  console.log('MQTT Connected');
-  for (const key in topics) {
-    if (topics.hasOwnProperty(key)) {
-      const topic = topics[key];
-      client.subscribe(topic);
-      console.log(`Published to: ${topic}`);
     }
   }
 });
@@ -94,10 +86,11 @@ client.on('connect', () => {
 client.on('message', (topic, payload) => {
   console.log('MQTT Recieved Topic:', topic.toString());
   saveDataToInfluxDB(topic, payload);
+  client.end();
 });
 
 client.on('error', (error) => {
-  console.log('Koneksi error MQTT:', error);
+  console.log('MQTT Koneksi error:', message = error);
 });
 
 app.get('/', (req, res) => {
