@@ -6,6 +6,7 @@ const Influx = require('influx');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const port = 5000; 
+const influxRouter = require('./database/routes.js')
 
 app.listen(port, () => {
   console.log(`Server at: http://localhost:${port}`);
@@ -14,6 +15,8 @@ app.listen(port, () => {
 app.use(bodyParser.json());
 app.use(cors());
 
+
+//CONFIGURATION INFLUXDB
 const influx = new Influx.InfluxDB({
   port: process.env.INFLUXDB_PORT,
   database: process.env.BUCKET, 
@@ -121,16 +124,7 @@ app.get('/', (req, res) => {
   }
 });
 
-app.get('/api/get_sensor_data', async (req, res) => {
-  try {
-    const query = 'SELECT * FROM sensor ORDER BY time DESC LIMIT 1';
-    const result = await influx.query(query);
-    const latestData = result[0];
-    res.json(latestData);
-  } catch (error) {
-    res.status(500).json({ error: 'Error fetching sensor data' });
-  }
-});
+app.get('/api', influxRouter);
 
 //InfluxDB set-up
 // const {InfluxDB, Point} = require('@influxdata/influxdb-client');
